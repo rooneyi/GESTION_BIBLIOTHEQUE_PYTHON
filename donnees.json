@@ -1,0 +1,30 @@
+[
+    {
+        "id": 1,
+        "Titre": "rrrrrrrrrrrrrr",
+        "Auteur": "rrrrrrrrrrrrrrr",
+        "Genre": "rrrrrrrrrrrrrrrrr",
+        "Disponible": true
+    },
+    {
+        "id": 2,
+        "Titre": "sssssssssss",
+        "Auteur": "rrrrrrrrrrrrrrr",
+        "Genre": "rrrrrrrrrrrrrrrrr",
+        "Disponible": false
+    },
+    {
+        "id": 3,
+        "Titre": "rrrrrkkkkkkk",
+        "Auteur": "rrrrrrrrrrrrrrr",
+        "Genre": "rrrrrrrrrrrrrrrrr",
+        "Disponible": true
+    },
+    {
+        "id": 4,
+        "Titre": "Electronique",
+        "Auteur": "Rooney",
+        "Genre": "Roman",
+        "Disponible": true
+    }
+]
