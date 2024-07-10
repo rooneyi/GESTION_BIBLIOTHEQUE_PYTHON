@@ -6,6 +6,7 @@ from ttkthemes import ThemedStyle
 import datetime
 from Livre import *
 
+
 def main():
     # Fonctions UI
     def ajouter_livre_ui():
@@ -103,8 +104,8 @@ def main():
     frame.pack()
 
     # Champs de saisie
-    input_frame = ttk.Frame(frame)
-    input_frame.grid(row=0, column=0, columnspan=2, padx=5, pady=5)
+    input_frame = ttk.LabelFrame(frame, text="Informations sur le livre")
+    input_frame.grid(row=0, column=0, padx=10, pady=10, sticky="nsew")
 
     ttk.Label(input_frame, text="Titre:").grid(row=0, column=0, padx=5, pady=5, sticky=tk.W)
     entry_titre = ttk.Entry(input_frame)
@@ -123,16 +124,16 @@ def main():
     entry_genre.grid(row=3, column=1, padx=5, pady=5)
 
     # Boutons d'action
-    button_frame = ttk.Frame(frame)
-    button_frame.grid(row=1, column=0, columnspan=2, padx=5, pady=5)
+    button_frame = ttk.LabelFrame(frame, text="Actions")
+    button_frame.grid(row=0, column=1, padx=10, pady=10, sticky="nsew")
 
     action_buttons = [
-        ("Ajouter Livre", ajouter_livre_ui, "green"),
-        ("Modifier Livre", modifier_livre_ui, "blue"),
-        ("Supprimer Livre", supprimer_livre_ui, "red"),
-        ("Archiver Livre", archiver_livre_ui, "orange"),
-        ("Emprunter Livre", emprunter_livre_ui, "blue"),
-        ("Retourner Livre", retourner_livre_ui, "purple")
+        ("Ajouter Livre", ajouter_livre_ui, "success.TButton"),
+        ("Modifier Livre", modifier_livre_ui, "info.TButton"),
+        ("Supprimer Livre", supprimer_livre_ui, "danger.TButton"),
+        ("Archiver Livre", archiver_livre_ui, "warning.TButton"),
+        ("Emprunter Livre", emprunter_livre_ui, "info.TButton"),
+        ("Retourner Livre", retourner_livre_ui, "primary.TButton")
     ]
 
     display_buttons = [
@@ -140,8 +141,8 @@ def main():
         ("Afficher Livres Disponibles", afficher_livres_disponibles_ui)
     ]
 
-    for idx, (text, command, color) in enumerate(action_buttons):
-        btn = ttk.Button(button_frame, text=text, command=command, style=f"{color}.TButton")
+    for idx, (text, command, style) in enumerate(action_buttons):
+        btn = ttk.Button(button_frame, text=text, command=command, style=style)
         btn.grid(row=idx, column=0, padx=5, pady=5, sticky=tk.W+tk.E)
 
     for idx, (text, command) in enumerate(display_buttons):
@@ -150,11 +151,11 @@ def main():
 
     # Ajouter styles pour les boutons colorés
     s = ttk.Style()
-    s.configure("green.TButton", background="green", foreground="white")
-    s.configure("red.TButton", background="red", foreground="white")
-    s.configure("blue.TButton", background="blue", foreground="white")
-    s.configure("orange.TButton", background="orange", foreground="white")
-    s.configure("purple.TButton", background="purple", foreground="white")
+    s.configure("success.TButton", background="#5cb85c", foreground="white")
+    s.configure("danger.TButton", background="#d9534f", foreground="white")
+    s.configure("info.TButton", background="#5bc0de", foreground="white")
+    s.configure("warning.TButton", background="#f0ad4e", foreground="white")
+    s.configure("primary.TButton", background="#0275d8", foreground="white")
 
     # Table pour afficher les livres
     columns = ("ID", "Titre", "Auteur", "Genre", "Disponible")
