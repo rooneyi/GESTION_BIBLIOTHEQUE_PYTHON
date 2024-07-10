@@ -1,3 +1,4 @@
+import datetime
 import tkinter as tk
 from tkinter import messagebox, ttk
 import json
@@ -181,3 +182,157 @@ def charger_livres_empruntes():
     else:
         emprunts = []
     return emprunts
+def ajouter_livre(titreLivre, auteur, genreLivre):
+    livres = charger_livres()
+    estDispo = True
+    if valider_titre(titreLivre) and valider_genre(genreLivre) and valider_auteur(auteur):
+        if verifier_doublon_titre(livres, titreLivre):
+            return "Un livre avec ce titre existe déjà."
+
+        idLivre = nouveau_id(livres)
+
+        livre = {
+            "id": idLivre,
+            "Titre": titreLivre,
+            "Auteur": auteur,
+            "Genre": genreLivre,
+            "Disponible": estDispo
+        }
+
+        livres.append(livre)
+        sauvegarder_livres(livres)
+
+        # Enregistrer la transaction
+        transaction = {
+            "Action": "Ajouter",
+            "Livre": titreLivre,
+            "Auteur": auteur,
+            "Genre": genreLivre,
+            "Date": str(datetime.datetime.now())
+        }
+        sauvegarder_transaction(transaction)
+
+        return "Les nouvelles données ont été ajoutées à donnees.json"
+    else:
+        return "Les informations fournies ne sont pas valides."
+
+def modifier_livre(titreLivre, nouvel_auteur, nouveau_genre):
+    livres = charger_livres()
+    for livre in livres:
+        if livre['Titre'].lower() == titreLivre.lower():
+            if valider_auteur(nouvel_auteur) and valider_genre(nouveau_genre):
+                ancien_auteur = livre['Auteur']
+                ancien_genre = livre['Genre']
+                livre['Auteur'] = nouvel_auteur
+                livre['Genre'] = nouveau_genre
+                sauvegarder_livres(livres)
+                
+                # Enregistrer la transaction
+                transaction = {
+                    "Action": "Modifier",
+                    "Livre": titreLivre,
+                    "Ancien Auteur": ancien_auteur,
+                    "Nouveau Auteur": nouvel_auteur,
+                    "Ancien Genre": ancien_genre,
+                    "Nouveau Genre": nouveau_genre,
+                    "Date": str(datetime.datetime.now())
+                }
+                sauvegarder_transaction(transaction)
+                
+                return f"Le livre '{titreLivre}' a été modifié."
+            else:
+                return "Informations de modification non valides."
+    return "Livre non trouvé."
+
+def supprimer_livre_definitivement(titre):
+    livres = charger_livres()
+    for livre in livres:
+        if livre['Titre'].lower() == titre.lower():
+            livres.remove(livre)
+            sauvegarder_livres(livres)
+            
+            # Enregistrer la transaction
+            transaction = {
+                "Action": "Supprimer",
+                "Livre": titre,
+                "Date": str(datetime.datetime.now())
+            }
+            sauvegarder_transaction(transaction)
+            
+            return f"Le livre '{titre}' a été supprimé."
+    return "Livre non trouvé."
+
+def emprunter_livre(titre):
+    livres = charger_livres()
+    emprunts = charger_livres_empruntes()
+
+    for livre in livres:
+        if livre['Titre'].lower() == titre.lower():
+            if livre['Disponible']:
+                livre['Disponible'] = False
+                emprunts.append(livre)
+                sauvegarder_livres(livres)
+                sauvegarder_emprunts(emprunts)
+                
+                # Enregistrer la transaction
+                transaction = {
+                    "Action": "Emprunter",
+                    "Livre": titre,
+                    "Date": str(datetime.datetime.now())
+                }
+                sauvegarder_transaction(transaction)
+                
+                return f"Le livre '{titre}' a été emprunté."
+            else:
+                return "Le livre est déjà emprunté."
+    return "Livre non trouvé."
+
+def retourner_livre(titre):
+    livres = charger_livres()
+    emprunts = charger_livres_empruntes()
+
+    for livre in livres:
+        if livre['Titre'].lower() == titre.lower():
+            if not livre['Disponible']:
+                livre['Disponible'] = True
+                for emprunt in emprunts:
+                    if emprunt['Titre'].lower() == titre.lower():
+                        emprunts.remove(emprunt)
+                        break
+                sauvegarder_livres(livres)
+                sauvegarder_emprunts(emprunts)
+                
+                # Enregistrer la transaction
+                transaction = {
+                    "Action": "Retourner",
+                    "Livre": titre,
+                    "Date": str(datetime.datetime.now())
+                }
+                sauvegarder_transaction(transaction)
+                
+                return f"Le livre '{titre}' a été retourné."
+            else:
+                return "Le livre est déjà disponible."
+    return "Livre non trouvé."
+
+
+def sauvegarder_transaction(transaction):
+    file_path = 'historique_transactions.json'
+    transactions = charger_transactions()
+    transactions.append(transaction)
+    with open(file_path, 'w') as json_file:
+        json.dump(transactions, json_file, indent=4)
+
+def charger_transactions():
+    file_path = 'historique_transactions.json'
+    if os.path.exists(file_path):
+        with open(file_path, 'r') as json_file:
+            try:
+                transactions = json.load(json_file)
+                if not isinstance(transactions, list):
+                    transactions = [transactions]
+            except json.JSONDecodeError:
+                transactions = []
+    else:
+        transactions = []
+    return transactions

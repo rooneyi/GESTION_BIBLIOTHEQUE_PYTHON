@@ -3,65 +3,85 @@ from tkinter import messagebox, ttk
 import json
 import os
 from ttkthemes import ThemedStyle
+import datetime
 from Livre import *
 
 def main():
+    # Fonctions UI
     def ajouter_livre_ui():
         titre = entry_titre.get()
         auteur = entry_auteur.get()
         genre = entry_genre.get()
         message = ajouter_livre(titre, auteur, genre)
         messagebox.showinfo("Résultat", message)
+        enregistrer_transaction("Ajouter", titre)
+        afficher_livres_ui()
         reset_fields()
 
     def afficher_livres_ui():
+        for item in tree.get_children():
+            tree.delete(item)
         livres = charger_livres()
-        result = afficher_livres(livres)
-        text_area.delete(1.0, tk.END)
-        text_area.insert(tk.END, result)
+        for livre in livres:
+            tree.insert("", "end", values=(livre['id'], livre['Titre'], livre['Auteur'], livre['Genre'], "Oui" if livre['Disponible'] else "Non"))
 
     def afficher_livres_disponibles_ui():
-        result = afficher_livres_disponibles()
-        text_area.delete(1.0, tk.END)
-        text_area.insert(tk.END, result)
+        for item in tree.get_children():
+            tree.delete(item)
+        livres = charger_livres()
+        disponibles = [livre for livre in livres if livre['Disponible']]
+        for livre in disponibles:
+            tree.insert("", "end", values=(livre['id'], livre['Titre'], livre['Auteur'], livre['Genre'], "Oui" if livre['Disponible'] else "Non"))
 
     def supprimer_livre_ui():
         titre = entry_titre.get()
         result = supprimer_livre_definitivement(titre)
-        text_area.delete(1.0, tk.END)
-        text_area.insert(tk.END, result)
+        messagebox.showinfo("Résultat", result)
+        enregistrer_transaction("Supprimer", titre)
+        afficher_livres_ui()
         reset_fields()
 
     def archiver_livre_ui():
         titre = entry_titre.get()
         result = archiver_livre(titre)
-        text_area.delete(1.0, tk.END)
-        text_area.insert(tk.END, result)
+        messagebox.showinfo("Résultat", result)
+        enregistrer_transaction("Archiver", titre)
+        afficher_livres_ui()
         reset_fields()
 
     def emprunter_livre_ui():
         titre = entry_titre.get()
         result = emprunter_livre(titre)
-        text_area.delete(1.0, tk.END)
-        text_area.insert(tk.END, result)
+        messagebox.showinfo("Résultat", result)
+        enregistrer_transaction("Emprunter", titre)
+        afficher_livres_ui()
         reset_fields()
 
     def modifier_livre_ui():
         ancien_titre = entry_titre.get()
-        nouveau_titre = entry_nouveau_titre.get()
         auteur = entry_auteur.get()
         genre = entry_genre.get()
-        result = modifier_livre(ancien_titre, nouveau_titre, auteur, genre)
-        text_area.delete(1.0, tk.END)
-        text_area.insert(tk.END, result)
+        result = modifier_livre(ancien_titre, auteur, genre)
+        messagebox.showinfo("Résultat", result)
+        enregistrer_transaction("Modifier", ancien_titre)
+        afficher_livres_ui()
         reset_fields()
 
     def retourner_livre_ui():
         titre = entry_titre.get()
         result = retourner_livre(titre)
-        text_area.delete(1.0, tk.END)
-        text_area.insert(tk.END, result)
+        messagebox.showinfo("Résultat", result)
+        enregistrer_transaction("Retourner", titre)
+        afficher_livres_ui()
         reset_fields()
+
+    def enregistrer_transaction(action, titre):
+        transaction = {
+            "Action": action,
+            "Livre": titre,
+            "Date": str(datetime.datetime.now())
+        }
+        sauvegarder_transaction(transaction)
 
     def reset_fields():
         entry_titre.delete(0, tk.END)
@@ -69,59 +89,84 @@ def main():
         entry_genre.delete(0, tk.END)
         entry_nouveau_titre.delete(0, tk.END)
 
+    # Configuration de la fenêtre principale
     fenetre = tk.Tk()
     fenetre.title("Gestion des Livres")
 
     style = ThemedStyle(fenetre)
-    style.set_theme("arc")  # Choix du thème (par exemple "arc")
+    style.set_theme("arc")
+
+    # Titre principal
+    ttk.Label(fenetre, text="Gestion des Livres", font=("Helvetica", 16)).pack(pady=10)
 
     frame = ttk.Frame(fenetre, padding=15)
     frame.pack()
 
     # Champs de saisie
-    ttk.Label(frame, text="Titre:").grid(row=0, column=0, padx=5, pady=5, sticky=tk.W)
-    entry_titre = ttk.Entry(frame)
+    input_frame = ttk.Frame(frame)
+    input_frame.grid(row=0, column=0, columnspan=2, padx=5, pady=5)
+
+    ttk.Label(input_frame, text="Titre:").grid(row=0, column=0, padx=5, pady=5, sticky=tk.W)
+    entry_titre = ttk.Entry(input_frame)
     entry_titre.grid(row=0, column=1, padx=5, pady=5)
 
-    ttk.Label(frame, text="Nouveau Titre (pour modification):").grid(row=1, column=0, padx=5, pady=5, sticky=tk.W)
-    entry_nouveau_titre = ttk.Entry(frame)
+    ttk.Label(input_frame, text="Nouveau Titre (pour modification):").grid(row=1, column=0, padx=5, pady=5, sticky=tk.W)
+    entry_nouveau_titre = ttk.Entry(input_frame)
     entry_nouveau_titre.grid(row=1, column=1, padx=5, pady=5)
 
-    ttk.Label(frame, text="Auteur:").grid(row=2, column=0, padx=5, pady=5, sticky=tk.W)
-    entry_auteur = ttk.Entry(frame)
+    ttk.Label(input_frame, text="Auteur:").grid(row=2, column=0, padx=5, pady=5, sticky=tk.W)
+    entry_auteur = ttk.Entry(input_frame)
     entry_auteur.grid(row=2, column=1, padx=5, pady=5)
 
-    ttk.Label(frame, text="Genre:").grid(row=3, column=0, padx=5, pady=5, sticky=tk.W)
-    entry_genre = ttk.Entry(frame)
+    ttk.Label(input_frame, text="Genre:").grid(row=3, column=0, padx=5, pady=5, sticky=tk.W)
+    entry_genre = ttk.Entry(input_frame)
     entry_genre.grid(row=3, column=1, padx=5, pady=5)
 
-    # Boutons
-    btn_ajouter = ttk.Button(frame, text="Ajouter Livre", command=ajouter_livre_ui)
-    btn_ajouter.grid(row=4, columnspan=2, pady=5)
+    # Boutons d'action
+    button_frame = ttk.Frame(frame)
+    button_frame.grid(row=1, column=0, columnspan=2, padx=5, pady=5)
 
-    btn_afficher = ttk.Button(frame, text="Afficher Tous les Livres", command=afficher_livres_ui)
-    btn_afficher.grid(row=5, columnspan=2, pady=5)
+    action_buttons = [
+        ("Ajouter Livre", ajouter_livre_ui, "green"),
+        ("Modifier Livre", modifier_livre_ui, "blue"),
+        ("Supprimer Livre", supprimer_livre_ui, "red"),
+        ("Archiver Livre", archiver_livre_ui, "orange"),
+        ("Emprunter Livre", emprunter_livre_ui, "blue"),
+        ("Retourner Livre", retourner_livre_ui, "purple")
+    ]
 
-    btn_afficher_disponibles = ttk.Button(frame, text="Afficher Livres Disponibles", command=afficher_livres_disponibles_ui)
-    btn_afficher_disponibles.grid(row=6, columnspan=2, pady=5)
+    display_buttons = [
+        ("Afficher Tous les Livres", afficher_livres_ui),
+        ("Afficher Livres Disponibles", afficher_livres_disponibles_ui)
+    ]
 
-    btn_supprimer = ttk.Button(frame, text="Supprimer Livre", command=supprimer_livre_ui)
-    btn_supprimer.grid(row=7, columnspan=2, pady=5)
+    for idx, (text, command, color) in enumerate(action_buttons):
+        btn = ttk.Button(button_frame, text=text, command=command, style=f"{color}.TButton")
+        btn.grid(row=idx, column=0, padx=5, pady=5, sticky=tk.W+tk.E)
 
-    btn_archiver = ttk.Button(frame, text="Archiver Livre", command=archiver_livre_ui)
-    btn_archiver.grid(row=8, columnspan=2, pady=5)
+    for idx, (text, command) in enumerate(display_buttons):
+        btn = ttk.Button(button_frame, text=text, command=command)
+        btn.grid(row=len(action_buttons) + idx, column=0, padx=5, pady=5, sticky=tk.W+tk.E)
 
-    btn_emprunter = ttk.Button(frame, text="Emprunter Livre", command=emprunter_livre_ui)
-    btn_emprunter.grid(row=9, columnspan=2, pady=5)
+    # Ajouter styles pour les boutons colorés
+    s = ttk.Style()
+    s.configure("green.TButton", background="green", foreground="white")
+    s.configure("red.TButton", background="red", foreground="white")
+    s.configure("blue.TButton", background="blue", foreground="white")
+    s.configure("orange.TButton", background="orange", foreground="white")
+    s.configure("purple.TButton", background="purple", foreground="white")
 
-    btn_modifier = ttk.Button(frame, text="Modifier Livre", command=modifier_livre_ui)
-    btn_modifier.grid(row=10, columnspan=2, pady=5)
+    # Table pour afficher les livres
+    columns = ("ID", "Titre", "Auteur", "Genre", "Disponible")
+    tree = ttk.Treeview(fenetre, columns=columns, show="headings")
+    tree.heading("ID", text="ID")
+    tree.heading("Titre", text="Titre")
+    tree.heading("Auteur", text="Auteur")
+    tree.heading("Genre", text="Genre")
+    tree.heading("Disponible", text="Disponible")
+    tree.pack(pady=10)
 
-    btn_retourner = ttk.Button(frame, text="Retourner Livre", command=retourner_livre_ui)
-    btn_retourner.grid(row=11, columnspan=2, pady=5)
-
-    text_area = tk.Text(fenetre, height=20, width=80)
-    text_area.pack(pady=10)
+    afficher_livres_ui()  # Afficher les livres au démarrage
 
     fenetre.mainloop()
 
