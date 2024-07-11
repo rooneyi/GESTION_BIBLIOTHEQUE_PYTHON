@@ -99,6 +99,23 @@ def main():
         }
         sauvegarder_transaction(transaction)
 
+    def enregistrer_transaction(action, titre):
+    transaction = {
+            "Action": action,
+            "Livre": titre,
+            "Date": str(datetime.datetime.now())
+        }
+    sauvegarder_transaction(transaction)
+
+    def enregistrer_transaction_emprunt(titre, nom, email):
+        transaction = {
+            "Action": "Emprunter",
+            "Livre": titre,
+            "Emprunteur": nom,
+            "Email": email,
+            "Date": str(datetime.datetime.now())
+        }
+        sauvegarder_transaction(transaction)
     def reset_fields():
         entry_titre.delete(0, tk.END)
         entry_auteur.delete(0, tk.END)
