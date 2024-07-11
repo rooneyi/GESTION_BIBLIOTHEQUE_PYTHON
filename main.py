@@ -90,6 +90,27 @@ def main():
         entry_genre.delete(0, tk.END)
         entry_nouveau_titre.delete(0, tk.END)
 
+    def afficher_emprunteurs():
+        emprunteurs = charger_emprunteurs()
+        if not emprunteurs:
+            messagebox.showinfo("Emprunteurs", "Aucun emprunteur enregistré.")
+            return
+        
+        fenetre_emprunteurs = tk.Toplevel(fenetre)
+        fenetre_emprunteurs.title("Emprunteurs")
+
+        ttk.Label(fenetre_emprunteurs, text="Liste des Emprunteurs", font=("Helvetica", 14)).pack(pady=10)
+
+        frame = ttk.Frame(fenetre_emprunteurs)
+        frame.pack(padx=10, pady=10)
+
+        ttk.Label(frame, text="Nom").grid(row=0, column=0, padx=5, pady=5)
+        ttk.Label(frame, text="Email").grid(row=0, column=1, padx=5, pady=5)
+
+        for idx, emprunteur in enumerate(emprunteurs, start=1):
+            ttk.Label(frame, text=emprunteur['Nom']).grid(row=idx, column=0, padx=5, pady=5)
+            ttk.Label(frame, text=emprunteur['Email']).grid(row=idx, column=1, padx=5, pady=5)
+
     # Configuration de la fenêtre principale
     fenetre = tk.Tk()
     fenetre.title("Gestion des Livres")
