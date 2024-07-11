@@ -1,5 +1,6 @@
 import tkinter as tk
-from tkinter import messagebox, ttk
+from tkinter import messagebox, ttk,filedialog
+import csv
 import json
 import os
 from ttkthemes import ThemedStyle
@@ -75,7 +76,21 @@ def main():
         enregistrer_transaction("Retourner", titre)
         afficher_livres_ui()
         reset_fields()
-
+    def importer_csv():
+        file_path = filedialog.askopenfilename(filetypes=[("Fichiers CSV", "*.csv")])
+        if file_path:
+            try:
+                with open(file_path, newline='', encoding='utf-8') as csvfile:
+                    reader = csv.DictReader(csvfile)
+                    for row in reader:
+                        titre = row['Titre']
+                        auteur = row['Auteur']
+                        genre = row['Genre']
+                        ajouter_livre(titre, auteur, genre)
+                messagebox.showinfo("Importation réussie", "Les livres ont été importés avec succès.")
+                afficher_livres_ui()
+            except Exception as e:
+                messagebox.showerror("Erreur lors de l'importation", f"Une erreur est survenue : {str(e)}")
     def enregistrer_transaction(action, titre):
         transaction = {
             "Action": action,
